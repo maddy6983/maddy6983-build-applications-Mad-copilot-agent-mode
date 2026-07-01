@@ -1,13 +1,34 @@
 import { useEffect, useState } from 'react';
-import { fetchCollection } from '../lib/api';
+
+const codespaceName = import.meta.env.VITE_CODESPACE_NAME?.trim();
+const leaderboardUrl = codespaceName
+  ? `https://${codespaceName}-8000.app.github.dev/api/leaderboard/`
+  : 'http://127.0.0.1:8000/api/leaderboard/';
+
+const normalizeCollection = (payload) => {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  if (payload && Array.isArray(payload.data)) {
+    return payload.data;
+  }
+
+  if (payload && payload.results && Array.isArray(payload.results)) {
+    return payload.results;
+  }
+
+  return [];
+};
 
 function Leaderboard() {
   const [entries, setEntries] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchCollection('leaderboard')
-      .then((data) => setEntries(data))
+    fetch(leaderboardUrl)
+      .then((response) => response.json())
+      .then((payload) => setEntries(normalizeCollection(payload)))
       .catch((err) => setError(err.message));
   }, []);
 

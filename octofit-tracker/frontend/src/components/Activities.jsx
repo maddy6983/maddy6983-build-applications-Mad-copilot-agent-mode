@@ -1,13 +1,34 @@
 import { useEffect, useState } from 'react';
-import { fetchCollection } from '../lib/api';
+
+const codespaceName = import.meta.env.VITE_CODESPACE_NAME?.trim();
+const activitiesUrl = codespaceName
+  ? `https://${codespaceName}-8000.app.github.dev/api/activities/`
+  : 'http://127.0.0.1:8000/api/activities/';
+
+const normalizeCollection = (payload) => {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  if (payload && Array.isArray(payload.data)) {
+    return payload.data;
+  }
+
+  if (payload && payload.results && Array.isArray(payload.results)) {
+    return payload.results;
+  }
+
+  return [];
+};
 
 function Activities() {
   const [activities, setActivities] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchCollection('activities')
-      .then((data) => setActivities(data))
+    fetch(activitiesUrl)
+      .then((response) => response.json())
+      .then((payload) => setActivities(normalizeCollection(payload)))
       .catch((err) => setError(err.message));
   }, []);
 

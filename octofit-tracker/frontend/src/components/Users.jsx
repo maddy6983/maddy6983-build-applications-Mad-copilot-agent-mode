@@ -1,13 +1,34 @@
 import { useEffect, useState } from 'react';
-import { fetchCollection } from '../lib/api';
+
+const codespaceName = import.meta.env.VITE_CODESPACE_NAME?.trim();
+const usersUrl = codespaceName
+  ? `https://${codespaceName}-8000.app.github.dev/api/users/`
+  : 'http://127.0.0.1:8000/api/users/';
+
+const normalizeCollection = (payload) => {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  if (payload && Array.isArray(payload.data)) {
+    return payload.data;
+  }
+
+  if (payload && payload.results && Array.isArray(payload.results)) {
+    return payload.results;
+  }
+
+  return [];
+};
 
 function Users() {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchCollection('users')
-      .then((data) => setUsers(data))
+    fetch(usersUrl)
+      .then((response) => response.json())
+      .then((payload) => setUsers(normalizeCollection(payload)))
       .catch((err) => setError(err.message));
   }, []);
 

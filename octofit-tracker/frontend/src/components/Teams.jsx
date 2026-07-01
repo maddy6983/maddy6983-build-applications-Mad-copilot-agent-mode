@@ -1,13 +1,34 @@
 import { useEffect, useState } from 'react';
-import { fetchCollection } from '../lib/api';
+
+const codespaceName = import.meta.env.VITE_CODESPACE_NAME?.trim();
+const teamsUrl = codespaceName
+  ? `https://${codespaceName}-8000.app.github.dev/api/teams/`
+  : 'http://127.0.0.1:8000/api/teams/';
+
+const normalizeCollection = (payload) => {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  if (payload && Array.isArray(payload.data)) {
+    return payload.data;
+  }
+
+  if (payload && payload.results && Array.isArray(payload.results)) {
+    return payload.results;
+  }
+
+  return [];
+};
 
 function Teams() {
   const [teams, setTeams] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchCollection('teams')
-      .then((data) => setTeams(data))
+    fetch(teamsUrl)
+      .then((response) => response.json())
+      .then((payload) => setTeams(normalizeCollection(payload)))
       .catch((err) => setError(err.message));
   }, []);
 
