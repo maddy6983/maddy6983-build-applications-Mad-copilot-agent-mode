@@ -1,10 +1,10 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import { Activity } from './models/activity';
 import { LeaderboardEntry } from './models/leaderboard';
 import { Team } from './models/team';
 import { User } from './models/user';
 import { Workout } from './models/workout';
+import { connectToDatabase } from './config/database';
 
 interface ResourceResponse<T> {
   data: T[];
@@ -62,10 +62,8 @@ app.get(['/api/workouts', '/api/workouts/'], async (_req, res) => {
 });
 
 const startServer = async () => {
-  const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/octofit_db';
-
   try {
-    await mongoose.connect(mongoUri);
+    await connectToDatabase();
     console.log('Connected to MongoDB');
   } catch (error) {
     console.warn('MongoDB connection failed; continuing without database.', error);
